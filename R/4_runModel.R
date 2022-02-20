@@ -46,8 +46,8 @@ source(paste0('R/3_CMR_',curModelName,'.R'))
 
 
 
-paraNimble <- function(seed,curCode,curConst,curDat,curInits=myInits,nburn=1,ntin=1,nkeep=1000, modName='curMod' ,checkpt=NULL){
-    #     curConst=microConst ;curDat=microDat   ;  seed=1 ;modName='m0ffarm'  ; checkpt=4; nkeep=500; ntin=1; nburn=200
+paraNimble <- function(seed,curCode,curConst,curDat,curInits=myInits,nburn=500,ntin=1,nkeep=1000, modName='curMod' ,checkpt=NULL){
+     # curCode=myCode ;curInits=myInits ; curConst=microConst ;curDat=microDat   ;  seed=1 ;modName='v1'  ; checkpt=4; nkeep=500; ntin=1; nburn=200
     X=seed
     strt=Sys.time()
     library(nimble)
@@ -78,11 +78,13 @@ paraNimble <- function(seed,curCode,curConst,curDat,curInits=myInits,nburn=1,nti
     
     
     vars=c('s.B.int','r.B.int','f.B.int',
-           'Sigma.id','rho.id', 'eps.id', 'xi.id',
-           'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
+           # 'Sigma.id','rho.id', 'eps.id', 'xi.id',
+           # 'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
+           # 'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
+            "cor.id","sd.id", 'cor.yr','sd.yr','cor.farm','sd.farm',
            's.B.Env','r.B.Env','f.B.Env',
-           'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
            's.ranef.yr','r.ranef.yr','f.ranef.yr',
+           's.ranef.farm','r.ranef.farm','f.ranef.farm',
            'sig',
            # 'Pim','Nm',
            # 'Notzero',
@@ -157,23 +159,22 @@ if(length(args)>1) {
                             # curConst=myconst,curDat=mydat,
                             # nburn=2,ntin=1,
                             curConst=microConst,curDat=microDat,
+                            # curConst=miniConst,curDat=miniDat,
                             curCode=myCode,curInits = myInits,
                             modName=curModelName,checkpt=5
     )
-}
-
-
-if(length(args)<=1){
+}else{
     start.t <- Sys.time()
-    this_cluster <- makeCluster(3)
-    chain_output <- parLapply(cl = this_cluster, X = 1:3,
+    this_cluster <- makeCluster(2)
+    chain_output <- parLapply(cl = this_cluster, X = 1:2,
                               fun = paraNimble,
                               # nburn=50000,ntin=20,
-                              # nburn=50000,ntin=5,nkeep=2000, # waic Comparaison
+                              nburn=50000,ntin=5,nkeep=2000, # waic Comparaison
                               # nburn=80000,ntin=10,nkeep=2000, # longuer run
                               # curConst=curConst,curDat=curDat,
-                              # nburn=2,ntin=1,
-                              curConst=microConst,curDat=microDat,
+                              # nburn=10000,ntin=10,
+                              # curConst=microConst,curDat=microDat,
+                              curConst=miniConst,curDat=miniDat,
                               curCode=myCode,curInits = myInits ,
                               modName=curModelName,checkpt=0
     )
