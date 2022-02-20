@@ -4,4 +4,6 @@
 .Ruserdata
 data
 cache
+graphs
 *Rproj
+*.docx
