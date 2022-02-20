@@ -598,12 +598,18 @@ colSums(miniDat$obs)
 apply(miniConst$age,2,table)
 
 
-#micro
+##micro ----
 
 
 which(rowSums(!is.na(mydat$nbFledge))==5) %>% sort()
-l <- c(12,730,1322,2874,3360,4176,5321)
-l <- sort(c(l,sample(1:myconst$nb.id,20-length(l))))
+l <- c(12,730,1322,2874,3360,4176,5321, # long life
+       # 785   ,   4846    ,  1943  ,
+       1885,4730,5671,4169,1236,6073,5351,3780,3900,5659 ,
+       3329,3282,3807,4791,1884,2969,5613,2889,6140,4840 ,
+       3797,4751,5270,5705,2958,4206,5370,6629,5371,1277 ,
+       5655,4206,5608,2467,6045,2446,6629,2982,3382,3280 
+       )  %>% unique()
+l <- sort(c(l,sample(1:myconst$nb.id,100-length(l))))
 microDat <- mydat
 microDat$obs <- mydat$obs[l,]
 microDat$state <- mydat$state[l,]

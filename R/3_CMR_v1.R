@@ -210,15 +210,15 @@ myCode <- nimbleCode({
   for(i in 1:nb.mat){
     for( t in first[iMat[i]]:(nb.t-1)){
       log(lambda[i,t]) <- f.B.int[age[iMat[i],t]] +
-        f.B.Env[1, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,1]+ # temp
-        f.B.Env[2, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,2]+ # prec
-        f.B.Env[3, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,3]+ # coldfnap
+        f.B.Env[1, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,1]+ # temp
+        f.B.Env[2, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,2]+ # prec
+        f.B.Env[3, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,3]+ # coldfnap
         f.B.Env[4, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,4]+ # hofp
         f.B.Env[5, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,5]+ # IA
-        f.B.Env[6, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,6]+ # prec:cold
-        f.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,7]+ # prec:IA
-        f.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,8]+ # IA:colf
-        f.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,9]+ # triple
+        f.B.Env[6, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,6]+ # prec:cold
+        f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,7]+ # prec:IA
+        f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,8]+ # IA:colf
+        f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,9]+ # triple
         f.ranef.farm[farm[iMat[i],t]]+
         f.ranef.yr[t,(age[iMat[i],t])]+
         f.ranef.id[iMat[i]]
@@ -249,25 +249,25 @@ myCode <- nimbleCode({
   # Calculate derived population parameters  -------------------
 
   # get nb of id of each age class in the pop	
-  for(t in 1:nb.t){
-    for(i in 1:nb.id) {
-        st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-    }
-    Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-    Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-    Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-  }
-  #
-
-  # immigration
-  # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-  for(t in 2:nb.t){
-    imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-    imib[t] <- imi[t,2]-imia[t]
-    Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-    Pim[2,t] <- (imia[t])/Nm[2,t-1]
-    Pim[3,t] <- (imib[t])/Nm[3,t-1]
-  }
+  # for(t in 1:nb.t){
+  #   for(i in 1:nb.id) {
+  #       st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+  #   }
+  #   Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+  #   Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+  #   Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+  # }
+  # #
+  # 
+  # # immigration
+  # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
+  # for(t in 2:nb.t){
+  #   imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+  #   imib[t] <- imi[t,2]-imia[t]
+  #   Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+  #   Pim[2,t] <- (imia[t])/Nm[2,t-1]
+  #   Pim[3,t] <- (imib[t])/Nm[3,t-1]
+  # }
 
 }
 )
@@ -295,7 +295,7 @@ myInits <- function(curDat,curConst){
            farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
            state=matrix(NA,nrow=nrow(curDat$state),ncol=ncol(curDat$state))
     )
-    nbFledge.tmp <- matrix(sample(2:6,replace = T,size = curConst$nb.id*curConst$nb.t),nrow = curConst$nb.id,ncol = curConst$nb.t)
+    nbFledge.tmp <- matrix(sample(1:6,replace = T,size = curConst$nb.id*curConst$nb.t),nrow = curConst$nb.id,ncol = curConst$nb.t)
     for(i in 1:curConst$nb.id){
       t2 <- max(which(curDat$state[i,] %in% 1:2))
       l$state[i,1:t2]=sample(1:2,t2,replace = T)
