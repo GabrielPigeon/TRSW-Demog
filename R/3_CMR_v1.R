@@ -60,70 +60,89 @@ myCode <- nimbleCode({
 
   # ######  random effects   -------------------------
  # modeled using multivariate normal distribution to get age:yr random effects. and account for annual covariance in survival between traits and ages. 
- # use of a scaling parameter to help convergeance of random effect with very different scale. see Gelman et al., 
 
+  
+  # ##  scaled inverse wishart for mvnorm prior
+  # for (a in 1:9){
+  #   xi.yr[a] ~ dunif(0,10) # Scaling
+  # } #i
+  # for (t in 1:(nb.t-1)) {
+  #   eps.yr[t,1:9]  ~ dmnorm(zero[1:9], Tau.yr[1:9, 1:9])
+  #   for (a in 1:3){
+  #     s.ranef.yr[t,a] <- xi.yr[a] * eps.yr[t,a]
+  #     r.ranef.yr[t,a] <- xi.yr[a+3] * eps.yr[t,a+3]
+  #     f.ranef.yr[t,a] <- xi.yr[a+6] * eps.yr[t,a+6]
+  #   } #a
+  # } #t
+  # ## Prior for precision matrix
+  # Tau.yr[1:9, 1:9]  ~ dwish(W[1:9, 1:9], 10)
+  # Sigma.yr.raw[1:9, 1:9] <- inverse(Tau.yr[1:9, 1:9])
+  # for (k in 1:9){
+  #   for (k.prime in 1:9){
+  #     rho.yr[k,k.prime] <- Sigma.yr.raw[k,k.prime]/
+  #       sqrt(Sigma.yr.raw[k,k]*Sigma.yr.raw[k.prime,k.prime])
+  #   }
+  #   Sigma.yr[k] <- abs(xi.yr[k])*sqrt(Sigma.yr.raw[k,k])
+  # }
+  
+   ##  manual uniform cov matrix
   for (a in 1:9){
-    xi.yr[a] ~ dunif(0,10) # Scaling
-  } #i
-
+    sd.yr[a] ~ dunif(0,10) # Scaling
+    cov.yr[a,a] <- sd.yr[a]*sd.yr[a]
+  }
+for(a in 1:8){
+  for(a2 in (a+1):9){
+    cor.yr[a,a2] ~ dunif(-1,1)
+    cov.yr[a2,a] <- sd.yr[a] * sd.yr[a2] * cor.yr[a,a2]
+    cov.yr[a,a2] <- cov.yr[a2,a]
+  }
+} #i
   for (t in 1:(nb.t-1)) {
-    eps.yr[t,1:9]  ~ dmnorm(zero[1:9], Tau.yr[1:9, 1:9])
+    eps.yr[t,1:9]  ~ dmnorm(zero[1:9], cov=cov.yr[1:9, 1:9])
     for (a in 1:3){
-      s.ranef.yr[t,a] <- xi.yr[a] * eps.yr[t,a] 
-      r.ranef.yr[t,a] <- xi.yr[a+3] * eps.yr[t,a+3]
-      f.ranef.yr[t,a] <- xi.yr[a+6] * eps.yr[t,a+6]
+      s.ranef.yr[t,a] <- eps.yr[t,a] 
+      r.ranef.yr[t,a] <- eps.yr[t,a+3]
+      f.ranef.yr[t,a] <- eps.yr[t,a+6]
     } #a
   } #t
 
-  ## Prior for precision matrix
-  Tau.yr[1:9, 1:9]  ~ dwish(W[1:9, 1:9], 10)
-  Sigma.yr.raw[1:9, 1:9] <- inverse(Tau.yr[1:9, 1:9])
-  for (k in 1:9){ # get the posterior estimation of sigma and correlation
-    for (k.prime in 1:9){
-      rho.yr[k,k.prime] <- Sigma.yr.raw[k,k.prime]/
-        sqrt(Sigma.yr.raw[k,k]*Sigma.yr.raw[k.prime,k.prime])
-    }
-    Sigma.yr[k] <- abs(xi.yr[k])*sqrt(Sigma.yr.raw[k,k])
+  
+  for (a in 1:9){
+    sd.farm[a] ~ dunif(0,10) # Scaling
+    cov.farm[a,a] <- sd.farm[a]*sd.farm[a]
   }
-
-  # [id, Z]  &  [farm,z] random effect. also from multivariate normal distribution to acount for cov between traits. but no age interaction to avoid too much over parametrization
-  xi.id[1] ~ dunif(0,10)
-  xi.id[2] ~ dunif(0,10)
-
-  for (i in 1:(nb.id)){
-    eps.id[i,1:2]~ dmnorm(zero[1:2], Tau.id[1:2, 1:2])
-    r.ranef.id[i] <-  xi.id[1] *eps.id[i,1]
-    f.ranef.id[i] <- xi.id[2] *eps.id[i,2]
+  for(a in 1:8){
+    for(a2 in (a+1):9){
+      cor.farm[a,a2] ~ dunif(-1,1)
+      cov.farm[a2,a] <- sd.farm[a] * sd.farm[a2] * cor.farm[a,a2]
+      cov.farm[a,a2] <- cov.farm[a2,a]
+    }
   } #i
-  Tau.id[1:2, 1:2]  ~ dwish(W[1:2, 1:2], 3)
-  Sigma.id.raw[1:2, 1:2] <- inverse(Tau.id[1:2, 1:2])
-  for (k in 1:2){# get the posterior estimation of sigma and correlation
-    for (k.prime in 1:2){
-      rho.id[k,k.prime] <- Sigma.id.raw[k,k.prime]/
-        sqrt(Sigma.id.raw[k,k]*Sigma.id.raw[k.prime,k.prime])
-    }
-    Sigma.id[k] <- abs(xi.id[k])*sqrt(Sigma.id.raw[k,k])
-  }
+  for (f in 1:nb.farm) {
+    eps.farm[f,1:9]  ~ dmnorm(zero[1:9], cov=cov.farm[1:9, 1:9])
+    for (a in 1:3){
+      s.ranef.farm[f,a] <- eps.farm[f,a] 
+      r.ranef.farm[f,a] <- eps.farm[f,a+3]
+      f.ranef.farm[f,a] <- eps.farm[f,a+6]
+    } #a
+  } #t
+  
+  sd.id[1] ~ dunif(0,10) 
+  sd.id[2] ~ dunif(0,10) 
+  cor.id ~ dunif(-1,1)
+  cov.id[1,1] <- sd.id[1]*sd.id[1]
+  cov.id[2,2] <- sd.id[2]*sd.id[2]
+  cov.id[1,2] <- sd.id[1] * sd.id[2] * cor.id
+  cov.id[2,1] <- cov.id[1,2]
+     
+  for (i in 1:nb.id) {
+    eps.id[i,1:2]  ~ dmnorm(zero[1:2], cov=cov.id[1:2, 1:2])
+    r.ranef.id[i] <- eps.id[i,1]
+    f.ranef.id[i] <- eps.id[i,2]
+  } #i
+  
 
-
-  for(z in 1:3){
-    xi.farm[z] ~ dunif(0,4)
-  }
-  for (f in 1:nb.farm){
-    eps.farm[f,1:3]  ~ dmnorm(zero[1:3], Tau.farm[1:3, 1:3])
-    s.ranef.farm[f] <- xi.farm[1] *eps.farm[f,1]
-    r.ranef.farm[f] <- xi.farm[2] *eps.farm[f,2]
-    f.ranef.farm[f] <- xi.farm[3] *eps.farm[f,3]
-  } #f
-  Tau.farm[1:3, 1:3]  ~ dwish(W[1:3, 1:3], 4)
-  Sigma.farm.raw[1:3, 1:3] <- inverse(Tau.farm[1:3, 1:3])
-  for (k in 1:3){# get the posterior estimation of sigma and correlation
-    for (k.prime in 1:3){
-      rho.farm[k,k.prime] <- Sigma.farm.raw[k,k.prime]/
-        sqrt(Sigma.farm.raw[k,k]*Sigma.farm.raw[k.prime,k.prime])
-    }
-    Sigma.farm[k] <- abs(xi.farm[k])*sqrt(Sigma.farm.raw[k,k])
-  }
+ 
 
   # capture probs
   mu.p[1] ~ dlogis(0,1)
@@ -158,20 +177,20 @@ myCode <- nimbleCode({
         s.B.Env[7, age[i,t]]* x.farmYrEnv[farm[i,t],t,7]+# prec:IA
         s.B.Env[8, age[i,t]]* x.farmYrEnv[farm[i,t],t,8]+# IA:colf
         s.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t,9]+ # triple
-      s.ranef.farm[farm[i,t]]+
+      s.ranef.farm[farm[i,t],age[i,t]]+
       s.ranef.yr[t,age[i,t]]
 
       logit(r[i,t]) <-  r.B.int[age[i,t]] +
-       r.B.Env[1, age[i,t]]* x.farmYrEnv[farm[i,t],t+1,1]+ # temp
-       r.B.Env[2, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,2]+ # prec
-       r.B.Env[3, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,3]+ # coldrnap
-        r.B.Env[4, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,4]+ # horp
-        r.B.Env[5, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,5]+ # IA
-        r.B.Env[6, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,6]+ # prec:cold
-        r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,7]+ # prec:IA
-        r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,8]+ # IA:colf
-        r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,9]+ # triple
-        r.ranef.farm[farm[i,t]]+
+       r.B.Env[1, age[i,t]]* x.farmYrEnv[farm[i,t+1],t+1,1]+ # temp
+       r.B.Env[2, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,2]+ # prec
+       r.B.Env[3, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,3]+ # coldrnap
+        r.B.Env[4, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,4]+ # horp
+        r.B.Env[5, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,5]+ # IA
+        r.B.Env[6, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,6]+ # prec:cold
+        r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,7]+ # prec:IA
+        r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,8]+ # IA:colf
+        r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,9]+ # triple
+        r.ranef.farm[farm[i,t+1],age[i,t]]+
         r.ranef.yr[t,age[i,t]]+
         r.ranef.id[i]
 
@@ -210,16 +229,16 @@ myCode <- nimbleCode({
   for(i in 1:nb.mat){
     for( t in first[iMat[i]]:(nb.t-1)){
       log(lambda[i,t]) <- f.B.int[age[iMat[i],t]] +
-        f.B.Env[1, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,1]+ # temp
-        f.B.Env[2, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,2]+ # prec
-        f.B.Env[3, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,3]+ # coldfnap
-        f.B.Env[4, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,4]+ # hofp
-        f.B.Env[5, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,5]+ # IA
-        f.B.Env[6, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,6]+ # prec:cold
-        f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,7]+ # prec:IA
-        f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,8]+ # IA:colf
-        f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,9]+ # triple
-        f.ranef.farm[farm[iMat[i],t]]+
+        f.B.Env[1, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,1]+ # temp
+        f.B.Env[2, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,2]+ # prec
+        f.B.Env[3, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,3]+ # coldfnap
+        f.B.Env[4, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,4]+ # hofp
+        f.B.Env[5, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,5]+ # IA
+        f.B.Env[6, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,6]+ # prec:cold
+        f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,7]+ # prec:IA
+        f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,8]+ # IA:colf
+        f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,9]+ # triple
+        f.ranef.farm[farm[iMat[i],t+1],age[i,t]]+
         f.ranef.yr[t,(age[iMat[i],t])]+
         f.ranef.id[iMat[i]]
     }
@@ -284,14 +303,9 @@ myInits <- function(curDat,curConst){
            mu.p= rnorm(2,c(0,3), 0.12),
            ranef.pa=rnorm(14-1,0,0.1),
            tau.p=runif(1,4,8),
-           Tau.yr=inverse(diag(c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2))),
-           Tau.farm=inverse(diag(c(0.2,0.5,0.1))),
-           Tau.id=inverse(diag(c(1.5,0.1))),
-           sig=rnorm(1,3,.5),
-           xi.farm=runif(3,0.95,1.05),
-           xi.id=runif(2,0.95,1.05),
-           xi.yr=runif(9,0.95,1.05),
-           eps.yr=matrix(rnorm((14-1)*9,0, 0.05),ncol = 9),
+           cor.yr=matrix(0.05,9,9),sd.yr=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
+           cor.farm=matrix(0.05,9,9),sd.farm=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
+           cor.id=0.05,sd.id=c(1.5,0.3),
            farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
            state=matrix(NA,nrow=nrow(curDat$state),ncol=ncol(curDat$state))
     )
@@ -315,3 +329,20 @@ myInits <- function(curDat,curConst){
         return(l)
   }
 
+MyVars=c('s.B.int','r.B.int','f.B.int',
+         # 'Sigma.id','rho.id', 'eps.id', 'xi.id',
+         # 'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
+         # 'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
+         "cor.id","sd.id", 'cor.yr','sd.yr',
+         'cor.farm','sd.farm',
+         's.B.Env','r.B.Env','f.B.Env',
+         's.ranef.yr','r.ranef.yr','f.ranef.yr',
+         's.ranef.farm','r.ranef.farm','f.ranef.farm',
+         'sig',
+         # 'Pim','Nm',
+         # 'Notzero',
+         # 'obs.hat','nbFledge.hat',
+         # 'state', 'nff',
+         # 'obs',
+         # 'farm',
+         'mu.p','p1','p2','sd.p')
