@@ -268,7 +268,6 @@ myCode <- nimbleCode({
        Pim[2,t] <- (imia[t])/Nm[2,t-1]
        Pim[3,t] <- (imib[t])/Nm[3,t-1]
      }
-    
 }
 )
 

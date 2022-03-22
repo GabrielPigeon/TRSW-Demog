@@ -268,25 +268,30 @@ for(a in 1:8){
   # Calculate derived population parameters  -------------------
 
   # get nb of id of each age class in the pop	
-  for(t in 1:nb.t){
-     for(i in 1:nb.id) {
-         st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-     }
-     Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-     Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-     Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-  }
+
   #
   # 
   # # immigration
   # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-  for(t in 2:nb.t){
-     imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-     imib[t] <- imi[t,2]-imia[t]
-     Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-     Pim[2,t] <- (imia[t])/Nm[2,t-1]
-     Pim[3,t] <- (imib[t])/Nm[3,t-1]
-  }
+  # for(t in 1:nb.t){
+  #   for(i in 1:nb.id) {
+  #       st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+  #   }
+  #   Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+  #   Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+  #   Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+  # }
+  # #
+  # 
+  # # immigration
+  # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
+  # for(t in 2:nb.t){
+  #   imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+  #   imib[t] <- imi[t,2]-imia[t]
+  #   Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+  #   Pim[2,t] <- (imia[t])/Nm[2,t-1]
+  #   Pim[3,t] <- (imib[t])/Nm[3,t-1]
+  # }
 
 }
 )
@@ -333,14 +338,14 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
          #'Sigma.id','rho.id',  'xi.id','eps.id',
          #'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
          #'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
-         #"cor.id","sd.id", 
          #'cor.yr','sd.yr',
-         #'cor.farm','sd.farm',
+         "cor.id","sd.id", 'cor.yr','sd.yr',
+         'cor.farm','sd.farm',
          's.B.Env','r.B.Env','f.B.Env',
          's.ranef.yr','r.ranef.yr','f.ranef.yr',
          's.ranef.farm','r.ranef.farm','f.ranef.farm',
          'sig',
-         'Pim','Nm',
+         #'Pim','Nm',
          # 'Notzero',
          # 'obs.hat','nbFledge.hat',
          # 'state', 'nff',
