@@ -107,25 +107,24 @@ for(a in 1:8){
   } #t
 
   
-  for (a in 1:9){
-    sd.farm[a] ~ dunif(0,10) # Scaling
-    cov.farm[a,a] <- sd.farm[a]*sd.farm[a]
-  }
-  for(a in 1:8){
-    for(a2 in (a+1):9){
-      cor.farm[a,a2] ~ dunif(-1,1)
-      cov.farm[a2,a] <- sd.farm[a] * sd.farm[a2] * cor.farm[a,a2]
-      cov.farm[a,a2] <- cov.farm[a2,a]
+    for(z in 1:3){
+        xi.farm[z] ~ dunif(0,4)
     }
-  } #i
-  for (f in 1:nb.farm) {
-    eps.farm[f,1:9]  ~ dmnorm(zero[1:9], cov=cov.farm[1:9, 1:9])
-    for (a in 1:3){
-      s.ranef.farm[f,a] <- eps.farm[f,a] 
-      r.ranef.farm[f,a] <- eps.farm[f,a+3]
-      f.ranef.farm[f,a] <- eps.farm[f,a+6]
-    } #a
-  } #t
+    for (f in 1:nb.farm){
+        eps.farm[f,1:3]  ~ dmnorm(zero[1:3], Tau.farm[1:3, 1:3])
+        s.ranef.farm[f] <- xi.farm[1] *eps.farm[f,1]
+        r.ranef.farm[f] <- xi.farm[2] *eps.farm[f,2]
+        f.ranef.farm[f] <- xi.farm[3] *eps.farm[f,3]
+    } #f
+    Tau.farm[1:3, 1:3]  ~ dwish(W[1:3, 1:3], 4)
+    Sigma.farm.raw[1:3, 1:3] <- inverse(Tau.farm[1:3, 1:3])
+    for (k in 1:3){# get the posterior estimation of sigma and correlation
+        for (k.prime in 1:3){
+            rho.farm[k,k.prime] <- Sigma.farm.raw[k,k.prime]/
+                sqrt(Sigma.farm.raw[k,k]*Sigma.farm.raw[k.prime,k.prime])
+        }
+        Sigma.farm[k] <- abs(xi.farm[k])*sqrt(Sigma.farm.raw[k,k])
+    }
   
   sd.id[1] ~ dunif(0,10) 
   sd.id[2] ~ dunif(0,10) 
@@ -177,7 +176,7 @@ for(a in 1:8){
         s.B.Env[7, age[i,t]]* x.farmYrEnv[farm[i,t],t,7]+# prec:IA
         s.B.Env[8, age[i,t]]* x.farmYrEnv[farm[i,t],t,8]+# IA:colf
         s.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t,9]+ # triple
-      s.ranef.farm[farm[i,t],age[i,t]]+
+      s.ranef.farm[farm[i,t]]+
       s.ranef.yr[t,age[i,t]]
 
       logit(r[i,t]) <-  r.B.int[age[i,t]] +
@@ -190,7 +189,7 @@ for(a in 1:8){
         r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,7]+ # prec:IA
         r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,8]+ # IA:colf
         r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,9]+ # triple
-        r.ranef.farm[farm[i,t+1],age[i,t]]+
+        r.ranef.farm[farm[i,t+1]]+
         r.ranef.yr[t,age[i,t]]+
         r.ranef.id[i]
 
@@ -238,7 +237,7 @@ for(a in 1:8){
         f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,7]+ # prec:IA
         f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,8]+ # IA:colf
         f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,9]+ # triple
-        f.ranef.farm[farm[iMat[i],t+1],age[i,t]]+
+        f.ranef.farm[farm[iMat[i],t+1]]+
         f.ranef.yr[t,(age[iMat[i],t])]+
         f.ranef.id[iMat[i]]
     }
@@ -268,25 +267,25 @@ for(a in 1:8){
   # Calculate derived population parameters  -------------------
 
   # get nb of id of each age class in the pop	
-  for(t in 1:nb.t){
-     for(i in 1:nb.id) {
-         st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-     }
-     Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-     Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-     Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-  }
-  #
+  # for(t in 1:nb.t){
+  #   for(i in 1:nb.id) {
+  #       st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+  #   }
+  #   Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+  #   Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+  #   Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+  # }
+  # #
   # 
   # # immigration
   # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-  for(t in 2:nb.t){
-     imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-     imib[t] <- imi[t,2]-imia[t]
-     Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-     Pim[2,t] <- (imia[t])/Nm[2,t-1]
-     Pim[3,t] <- (imib[t])/Nm[3,t-1]
-  }
+  # for(t in 2:nb.t){
+  #   imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+  #   imib[t] <- imi[t,2]-imia[t]
+  #   Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+  #   Pim[2,t] <- (imia[t])/Nm[2,t-1]
+  #   Pim[3,t] <- (imib[t])/Nm[3,t-1]
+  # }
 
 }
 )
@@ -304,7 +303,7 @@ myInits <- function(curDat,curConst){
            ranef.pa=rnorm(14-1,0,0.1),
            tau.p=runif(1,4,8),
            cor.yr=matrix(0.05,9,9),sd.yr=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
-           cor.farm=matrix(0.05,9,9),sd.farm=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
+           Tau.farm=inverse(diag(c(0.2,0.5,0.1))),xi.farm=runif(3,0.95,1.05),
            cor.id=0.05,sd.id=c(1.5,0.3),
            farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
            state=matrix(NA,nrow=nrow(curDat$state),ncol=ncol(curDat$state))
@@ -329,21 +328,21 @@ myInits <- function(curDat,curConst){
         return(l)
   }
 
+
 MyVars=c('s.B.int','r.B.int','f.B.int',
-         #'Sigma.id','rho.id',  'xi.id','eps.id',
-         #'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
-         #'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
-         #"cor.id","sd.id", 
-         #'cor.yr','sd.yr',
-         #'cor.farm','sd.farm',
-         's.B.Env','r.B.Env','f.B.Env',
-         's.ranef.yr','r.ranef.yr','f.ranef.yr',
-         's.ranef.farm','r.ranef.farm','f.ranef.farm',
-         'sig',
-         'Pim','Nm',
-         # 'Notzero',
-         # 'obs.hat','nbFledge.hat',
-         # 'state', 'nff',
-         # 'obs',
-         # 'farm',
-         'mu.p','p1','p2','sd.p')
+       # 'Sigma.id','rho.id', 'eps.id', 'xi.id',
+       # 'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
+       'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
+       "cor.id","sd.id", 'cor.yr','sd.yr',
+       # 'cor.farm','sd.farm',
+       's.B.Env','r.B.Env','f.B.Env',
+       's.ranef.yr','r.ranef.yr','f.ranef.yr',
+       's.ranef.farm','r.ranef.farm','f.ranef.farm',
+       'sig',
+       # 'Pim','Nm',
+       # 'Notzero',
+       # 'obs.hat','nbFledge.hat',
+       # 'state', 'nff',
+       # 'obs',
+       # 'farm',
+       'mu.p','p1','p2','sd.p')

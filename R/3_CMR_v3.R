@@ -61,84 +61,37 @@ myCode <- nimbleCode({
   # ######  random effects   -------------------------
  # modeled using multivariate normal distribution to get age:yr random effects. and account for annual covariance in survival between traits and ages. 
 
-  
-  # ##  scaled inverse wishart for mvnorm prior
-  # for (a in 1:9){
-  #   xi.yr[a] ~ dunif(0,10) # Scaling
-  # } #i
-  # for (t in 1:(nb.t-1)) {
-  #   eps.yr[t,1:9]  ~ dmnorm(zero[1:9], Tau.yr[1:9, 1:9])
-  #   for (a in 1:3){
-  #     s.ranef.yr[t,a] <- xi.yr[a] * eps.yr[t,a]
-  #     r.ranef.yr[t,a] <- xi.yr[a+3] * eps.yr[t,a+3]
-  #     f.ranef.yr[t,a] <- xi.yr[a+6] * eps.yr[t,a+6]
-  #   } #a
-  # } #t
-  # ## Prior for precision matrix
-  # Tau.yr[1:9, 1:9]  ~ dwish(W[1:9, 1:9], 10)
-  # Sigma.yr.raw[1:9, 1:9] <- inverse(Tau.yr[1:9, 1:9])
-  # for (k in 1:9){
-  #   for (k.prime in 1:9){
-  #     rho.yr[k,k.prime] <- Sigma.yr.raw[k,k.prime]/
-  #       sqrt(Sigma.yr.raw[k,k]*Sigma.yr.raw[k.prime,k.prime])
-  #   }
-  #   Sigma.yr[k] <- abs(xi.yr[k])*sqrt(Sigma.yr.raw[k,k])
-  # }
-  
    ##  manual uniform cov matrix
   for (a in 1:9){
     sd.yr[a] ~ dunif(0,10) # Scaling
-    cov.yr[a,a] <- sd.yr[a]*sd.yr[a]
   }
-for(a in 1:8){
-  for(a2 in (a+1):9){
-    cor.yr[a,a2] ~ dunif(-1,1)
-    cov.yr[a2,a] <- sd.yr[a] * sd.yr[a2] * cor.yr[a,a2]
-    cov.yr[a,a2] <- cov.yr[a2,a]
-  }
-} #i
+
   for (t in 1:(nb.t-1)) {
-    eps.yr[t,1:9]  ~ dmnorm(zero[1:9], cov=cov.yr[1:9, 1:9])
     for (a in 1:3){
-      s.ranef.yr[t,a] <- eps.yr[t,a] 
-      r.ranef.yr[t,a] <- eps.yr[t,a+3]
-      f.ranef.yr[t,a] <- eps.yr[t,a+6]
+      s.ranef.yr[t,a] ~ dnorm(0,sd=sd.yr[a]) 
+      r.ranef.yr[t,a] ~ dnorm(0,sd=sd.yr[a+3])
+      f.ranef.yr[t,a] ~ dnorm(0,sd=sd.yr[a+6])
     } #a
   } #t
 
   
-  for (a in 1:9){
-    sd.farm[a] ~ dunif(0,10) # Scaling
-    cov.farm[a,a] <- sd.farm[a]*sd.farm[a]
-  }
-  for(a in 1:8){
-    for(a2 in (a+1):9){
-      cor.farm[a,a2] ~ dunif(-1,1)
-      cov.farm[a2,a] <- sd.farm[a] * sd.farm[a2] * cor.farm[a,a2]
-      cov.farm[a,a2] <- cov.farm[a2,a]
+    for (a in 1:9){
+        sd.farm[a] ~ dunif(0,10) # Scaling
     }
-  } #i
-  for (f in 1:nb.farm) {
-    eps.farm[f,1:9]  ~ dmnorm(zero[1:9], cov=cov.farm[1:9, 1:9])
-    for (a in 1:3){
-      s.ranef.farm[f,a] <- eps.farm[f,a] 
-      r.ranef.farm[f,a] <- eps.farm[f,a+3]
-      f.ranef.farm[f,a] <- eps.farm[f,a+6]
-    } #a
-  } #t
+   
+    for (f in 1:nb.farm) {
+        for (a in 1:3){
+            s.ranef.farm[f,a] ~ dnorm(0,sd=sd.farm[a]) 
+            r.ranef.farm[f,a] ~ dnorm(0,sd=sd.farm[a+3])
+            f.ranef.farm[f,a] ~ dnorm(0,sd=sd.farm[a+6])
+        } #a
+    } #t
   
   sd.id[1] ~ dunif(0,10) 
   sd.id[2] ~ dunif(0,10) 
-  cor.id ~ dunif(-1,1)
-  cov.id[1,1] <- sd.id[1]*sd.id[1]
-  cov.id[2,2] <- sd.id[2]*sd.id[2]
-  cov.id[1,2] <- sd.id[1] * sd.id[2] * cor.id
-  cov.id[2,1] <- cov.id[1,2]
-     
   for (i in 1:nb.id) {
-    eps.id[i,1:2]  ~ dmnorm(zero[1:2], cov=cov.id[1:2, 1:2])
-    r.ranef.id[i] <- eps.id[i,1]
-    f.ranef.id[i] <- eps.id[i,2]
+    r.ranef.id[i] ~ dnorm(0,sd=sd.id[1]) 
+    f.ranef.id[i] ~ dnorm(0,sd=sd.id[2]) 
   } #i
   
 
@@ -268,25 +221,25 @@ for(a in 1:8){
   # Calculate derived population parameters  -------------------
 
   # get nb of id of each age class in the pop	
-  for(t in 1:nb.t){
-     for(i in 1:nb.id) {
-         st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-     }
-     Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-     Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-     Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-  }
-  #
+  # for(t in 1:nb.t){
+  #   for(i in 1:nb.id) {
+  #       st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+  #   }
+  #   Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+  #   Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+  #   Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+  # }
+  # #
   # 
   # # immigration
   # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-  for(t in 2:nb.t){
-     imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-     imib[t] <- imi[t,2]-imia[t]
-     Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-     Pim[2,t] <- (imia[t])/Nm[2,t-1]
-     Pim[3,t] <- (imib[t])/Nm[3,t-1]
-  }
+  # for(t in 2:nb.t){
+  #   imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+  #   imib[t] <- imi[t,2]-imia[t]
+  #   Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+  #   Pim[2,t] <- (imia[t])/Nm[2,t-1]
+  #   Pim[3,t] <- (imib[t])/Nm[3,t-1]
+  # }
 
 }
 )
@@ -303,9 +256,12 @@ myInits <- function(curDat,curConst){
            mu.p= rnorm(2,c(0,3), 0.12),
            ranef.pa=rnorm(14-1,0,0.1),
            tau.p=runif(1,4,8),
-           cor.yr=matrix(0.05,9,9),sd.yr=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
-           cor.farm=matrix(0.05,9,9),sd.farm=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
-           cor.id=0.05,sd.id=c(1.5,0.3),
+           # cor.yr=matrix(0.05,9,9),
+           sd.yr=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
+           sd.farm=c(0.2,0.3,0.2,.8,.5,.5,.4,.1,.2),
+           # cor.id=0.05,
+           sd.id=c(1.5,0.3),
+           # Tau.farm=inverse(diag(c(0.2,0.5,0.1))),xi.farm=runif(3,0.95,1.05),
            farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
            state=matrix(NA,nrow=nrow(curDat$state),ncol=ncol(curDat$state))
     )
@@ -330,20 +286,19 @@ myInits <- function(curDat,curConst){
   }
 
 MyVars=c('s.B.int','r.B.int','f.B.int',
-         #'Sigma.id','rho.id',  'xi.id','eps.id',
-         #'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
-         #'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
-         #"cor.id","sd.id", 
-         #'cor.yr','sd.yr',
-         #'cor.farm','sd.farm',
-         's.B.Env','r.B.Env','f.B.Env',
-         's.ranef.yr','r.ranef.yr','f.ranef.yr',
-         's.ranef.farm','r.ranef.farm','f.ranef.farm',
-         'sig',
-         'Pim','Nm',
-         # 'Notzero',
-         # 'obs.hat','nbFledge.hat',
-         # 'state', 'nff',
-         # 'obs',
-         # 'farm',
-         'mu.p','p1','p2','sd.p')
+                # 'Sigma.id','rho.id', 'eps.id', 'xi.id',
+                # 'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
+                # 'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
+               "sd.id", 'sd.yr',
+               'sd.farm',
+                's.B.Env','r.B.Env','f.B.Env',
+                's.ranef.yr','r.ranef.yr','f.ranef.yr',
+                's.ranef.farm','r.ranef.farm','f.ranef.farm',
+                'sig',
+                # 'Pim','Nm',
+                # 'Notzero',
+                # 'obs.hat','nbFledge.hat',
+                # 'state', 'nff',
+                # 'obs',
+                # 'farm',
+                'mu.p','p1','p2','sd.p')
