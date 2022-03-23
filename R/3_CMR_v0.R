@@ -162,17 +162,17 @@ myCode <- nimbleCode({
                 s.ranef.yr[t,age[i,t]]
             
             logit(r[i,t]) <-  r.B.int[age[i,t]] +
-                r.B.Env[1, age[i,t]]* x.farmYrEnv[farm[i,t],t+1,1]+ # temp
-                r.B.Env[2, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,2]+ # prec
-                r.B.Env[3, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,3]+ # coldrnap
-                r.B.Env[4, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,4]+ # horp
-                r.B.Env[5, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,5]+ # IA
-                r.B.Env[6, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,6]+ # prec:cold
-                r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,7]+ # prec:IA
-                r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,8]+ # IA:colf
-                r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t+1,9]+ # triple
-                r.ranef.farm[farm[i,t]]+
-                r.ranef.yr[t,age[i,t]]+
+                r.B.Env[1, age[i,t]]* x.farmYrEnv[farm[i,t+1],t+1,1]+ # temp
+                r.B.Env[2, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,2]+ # prec
+                r.B.Env[3, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,3]+ # coldrnap
+                r.B.Env[4, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,4]+ # horp
+                r.B.Env[5, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,5]+ # IA
+                r.B.Env[6, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,6]+ # prec:cold
+                r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,7]+ # prec:IA
+                r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,8]+ # IA:colf
+                r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,9]+ # triple
+                r.ranef.farm[farm[i,t+1]]+
+                r.ranef.yr[t+1,age[i,t]]+
                 r.ranef.id[i]
             
             # ps[from,i,t,to]
@@ -210,17 +210,17 @@ myCode <- nimbleCode({
     for(i in 1:nb.mat){
         for( t in first[iMat[i]]:(nb.t-1)){
             log(lambda[i,t]) <- f.B.int[age[iMat[i],t]] +
-                f.B.Env[1, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,1]+ # temp
-                f.B.Env[2, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,2]+ # prec
-                f.B.Env[3, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,3]+ # coldfnap
-                f.B.Env[4, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,4]+ # hofp
-                f.B.Env[5, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,5]+ # IA
-                f.B.Env[6, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,6]+ # prec:cold
-                f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,7]+ # prec:IA
-                f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,8]+ # IA:colf
-                f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t],t+1,9]+ # triple
-                f.ranef.farm[farm[iMat[i],t]]+
-                f.ranef.yr[t,(age[iMat[i],t])]+
+                f.B.Env[1, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,1]+ # temp
+                f.B.Env[2, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,2]+ # prec
+                f.B.Env[3, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,3]+ # coldfnap
+                f.B.Env[4, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,4]+ # hofp
+                f.B.Env[5, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,5]+ # IA
+                f.B.Env[6, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,6]+ # prec:cold
+                f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,7]+ # prec:IA
+                f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,8]+ # IA:colf
+                f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,9]+ # triple
+                f.ranef.farm[farm[iMat[i],t+1]]+
+                f.ranef.yr[t+1,(age[iMat[i],t])]+
                 f.ranef.id[iMat[i]]
         }
     }
