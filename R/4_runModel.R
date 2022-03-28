@@ -3,7 +3,7 @@ args = commandArgs(trailingOnly=TRUE)
 # args:  [name] [array] [startState.rds]
 # startState not yet implemented
 if(length(args)>0) curModelName=args[1]
-if(length(args)==0) curModelName='v1'
+if(length(args)==0) curModelName='v0'
 
 
 library(parallel)
@@ -46,13 +46,10 @@ source(paste0('R/3_CMR_',curModelName,'.R'))
 
 
 
-paraNimble <- function(seed,curCode,
+paraNimble <- function(seed,curCode,curConst, curDat,
                        # nburn=500,ntin=1,nkeep=1000,
                        nburn=50000,ntin=5,nkeep=2000, # waic Comparaison
                        # nburn=80000,ntin=10,nkeep=2000, # longuer run
-                       # curConst=myconst,curDat=mydat,
-                       curConst=miniConst,curDat=miniDat,
-                       # curConst=microConst,curDat=microDat,
                        curInits=myInits,vars=MyVars, 
                        modName='curMod' ,checkpt=NULL){
      # curCode=myCode ;curInits=myInits ; curConst=microConst ;curDat=microDat   ;  seed=1 ;modName='v1'  ; checkpt=4; nkeep=500; ntin=1; nburn=200
@@ -147,6 +144,8 @@ paraNimble <- function(seed,curCode,
 if(length(args)>1) {
     chain_output=paraNimble(seed = as.numeric(args[2]),
                             curCode=myCode,curInits = myInits,vars=MyVars,
+                            curConst=miniConst,curDat=miniDat,
+                            # curConst=myconst,curDat=mydat,
                             modName=curModelName,checkpt=5
     )
 }else{
@@ -155,6 +154,8 @@ if(length(args)>1) {
     chain_output <- parLapply(cl = this_cluster, X = 1:2,
                               fun = paraNimble,
                               curCode=myCode,curInits = myInits ,vars=MyVars,
+                              curConst=miniConst,curDat=miniDat,
+                              # curConst=myconst,curDat=mydat,
                               modName=curModelName,checkpt=0
     )
     # It's good practice to close the cluster when you're done with it.

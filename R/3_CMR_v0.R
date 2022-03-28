@@ -66,7 +66,7 @@ myCode <- nimbleCode({
         xi.yr[a] ~ dunif(0,10) # Scaling
     } #i
     
-    for (t in 1:(nb.t-1)) {
+    for (t in 1:(nb.t)) {
         eps.yr[t,1:9]  ~ dmnorm(zero[1:9], Tau.yr[1:9, 1:9])
         for (a in 1:3){
             s.ranef.yr[t,a] <- xi.yr[a] * eps.yr[t,a] 
@@ -249,25 +249,25 @@ myCode <- nimbleCode({
     # Calculate derived population parameters  -------------------
     
     # get nb of id of each age class in the pop	
-     for(t in 1:nb.t){
-       for(i in 1:nb.id) {
-           st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-       }
-       Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-       Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-       Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-     }
-    # #
-    # 
-    # # immigration
-    # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-     for(t in 2:nb.t){
-       imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-       imib[t] <- imi[t,2]-imia[t]
-       Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-       Pim[2,t] <- (imia[t])/Nm[2,t-1]
-       Pim[3,t] <- (imib[t])/Nm[3,t-1]
-     }
+    #  for(t in 1:nb.t){
+    #    for(i in 1:nb.id) {
+    #        st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+    #    }
+    #    Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+    #    Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+    #    Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+    #  }
+    # # #
+    # # 
+    # # # immigration
+    # # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
+    #  for(t in 2:nb.t){
+    #    imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+    #    imib[t] <- imi[t,2]-imia[t]
+    #    Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+    #    Pim[2,t] <- (imia[t])/Nm[2,t-1]
+    #    Pim[3,t] <- (imib[t])/Nm[3,t-1]
+    #  }
 }
 )
 
@@ -290,7 +290,7 @@ myInits <- function(curDat,curConst){
         xi.farm=runif(3,0.95,1.05),
         xi.id=runif(2,0.95,1.05),
         xi.yr=runif(9,0.95,1.05),
-        eps.yr=matrix(rnorm((14-1)*9,0, 0.05),ncol = 9),
+        eps.yr=matrix(rnorm((14)*9,0, 0.05),ncol = 9),
         farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
         state=matrix(NA,nrow=nrow(curDat$state),ncol=ncol(curDat$state))
     )
@@ -318,16 +318,40 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
          'Sigma.id','rho.id', 'xi.id', 'eps.id',
          'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
          'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
-         "cor.id","sd.id", 'cor.yr','sd.yr',
-         'cor.farm','sd.farm',
+         # "cor.id","sd.id", 'cor.yr','sd.yr',
+         # 'cor.farm','sd.farm',
          's.B.Env','r.B.Env','f.B.Env',
          's.ranef.yr','r.ranef.yr','f.ranef.yr',
          's.ranef.farm','r.ranef.farm','f.ranef.farm',
          'sig',
-         'Pim','Nm',
+         # 'Pim','Nm',
          # 'Notzero',
          # 'obs.hat','nbFledge.hat',
          # 'state', 'nff',
          # 'obs',
          # 'farm',
          'mu.p','p1','p2','sd.p')
+
+
+
+
+## testing ---------------------
+
+# library(coda)
+# library(tidyverse)
+# source('R/999_MyFunc.R')
+# load('cache/cleanMultiState.Rdata')
+# 
+# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
+#            niter = 2000,nburnin = 1000,nchains = 3,
+#            monitors = MyVars,
+#            summary = T,samplesAsCodaMCMC = T,
+#            inits = myInits(curDat = microDat,curConst = microConst)
+#         )
+# 
+# plot(nimbleOut$samples[,"s.B.int[2]"])
+# plot(nimbleOut$samples[,"r.B.Env[4, 3]"])
+# plot(nimbleOut$samples[,"f.B.Env[4, 3]"])
+# plot(nimbleOut$samples[,"s.B.Env[4, 3]"])
+# plot(nimbleOut$samples[,"r.B.Env[4, 3]"])
+# plot(nimbleOut$samples[,"sig"])
