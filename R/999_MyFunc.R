@@ -54,36 +54,6 @@ ef/as.numeric(dur,units='hours')
 }
 
 
-dZIP <- nimbleFunction(
-  run = function(x = integer(), lambda = double(),
-                 notZeroProb = double(), log = logical(0, default = 0)) {
-    returnType(double())
-    ## First handle non-zero data
-    if (x != 0) {
-      ## return the log probability if log = TRUE
-      if (log) return(dpois(x, lambda, log = TRUE) + log(notZeroProb))
-      ## or the probability if log = FALSE
-      else return((notZeroProb) * dpois(x, lambda, log = FALSE))
-    }
-    ## From here down we know x is 0
-    totalProbZero <- (1-notZeroProb) + (notZeroProb) * dpois(0, lambda, log = FALSE)
-    if (log) return(log(totalProbZero))
-    return(totalProbZero)
-  })
-rZIP <- nimbleFunction(
-  run = function(n = integer(), lambda = double(), notZeroProb = double()) {
-    returnType(integer())
-    isStructuralZero <- rbinom(1, prob = (1-notZeroProb), size = 1)
-    if (isStructuralZero) return(0)
-    return(rpois(1, lambda))
-  })
-registerDistributions(list(
-  dZIP = list(
-    BUGSdist = "dZIP(lambda, notZeroProb)",
-    discrete = TRUE,
-    range = c(0, Inf),
-    types = c('value = integer()', 'lambda = double()', 'notZeroProb = double()')
-  )))
 
 get.pdir <- function(x,null=0){
   max(
