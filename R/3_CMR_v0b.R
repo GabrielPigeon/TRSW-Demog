@@ -162,7 +162,7 @@ myCode <- nimbleCode({
                 s.B.Env[7, age[i,t]]* x.farmYrEnv[farm[i,t],t,7]+# prec:IA
                 s.B.Env[8, age[i,t]]* x.farmYrEnv[farm[i,t],t,8]+# IA:colf
                 s.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t],t,9]+ # triple
-                s.ranef.farm[farm[i,t]]+
+                s.ranef.farm[farm[i,t],age[i,t]]+
                 s.ranef.yr[t,age[i,t]]
             
             logit(r[i,t]) <-  r.B.int[age[i,t]] +
@@ -175,7 +175,7 @@ myCode <- nimbleCode({
                 r.B.Env[7, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,7]+ # prec:IA
                 r.B.Env[8, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,8]+ # IA:colf
                 r.B.Env[9, age[i,t]]*  x.farmYrEnv[farm[i,t+1],t+1,9]+ # triple
-                r.ranef.farm[farm[i,t+1]]+
+                r.ranef.farm[farm[i,t+1],age[i,t]]+
                 r.ranef.yr[t+1,age[i,t]]+
                 r.ranef.id[i]
             
@@ -223,7 +223,7 @@ myCode <- nimbleCode({
                 f.B.Env[7, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,7]+ # prec:IA
                 f.B.Env[8, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,8]+ # IA:colf
                 f.B.Env[9, age[iMat[i],t]]*  x.farmYrEnv[farm[iMat[i],t+1],t+1,9]+ # triple
-                f.ranef.farm[farm[iMat[i],t+1]]+
+                f.ranef.farm[farm[iMat[i],t+1],age[i,t]]+
                 f.ranef.yr[t+1,(age[iMat[i],t])]+
                 f.ranef.id[iMat[i]]
         }
@@ -341,21 +341,19 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 
 ## testing ---------------------
 
-# library(coda)
-# library(tidyverse)
-# source('R/999_MyFunc.R')
-# load('cache/cleanMultiState.Rdata')
-# 
-# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
-#            niter = 2000,nburnin = 1000,nchains = 3,
-#            monitors = MyVars,
-#            summary = T,samplesAsCodaMCMC = T,
-#            inits = myInits(curDat = microDat,curConst = microConst)
-#         )
-# 
-# plot(nimbleOut$samples[,"s.B.int[2]"])
-# plot(nimbleOut$samples[,"r.B.Env[4, 3]"])
-# plot(nimbleOut$samples[,"f.B.Env[4, 3]"])
-# plot(nimbleOut$samples[,"s.B.Env[4, 3]"])
-# plot(nimbleOut$samples[,"r.B.Env[4, 3]"])
-# plot(nimbleOut$samples[,"sig"])
+library(coda)
+library(tidyverse)
+source('R/999_MyFunc.R')
+load('cache/cleanMultiState.Rdata')
+
+nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
+           niter = 2000,nburnin = 1000,nchains = 3,
+           monitors = MyVars,
+           summary = T,samplesAsCodaMCMC = T,
+           inits = myInits(curDat = microDat,curConst = microConst)
+        )
+
+plot(nimbleOut$samples[,"s.B.int[2]"])
+plot(nimbleOut$samples[,'Sigma.yr[3]'])
+plot(nimbleOut$samples[,'Sigma.yr[6]'])
+plot(nimbleOut$samples[,"sig"])
