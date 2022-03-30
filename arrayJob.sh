@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-pelleti2
-#SBATCH --time=9-23:55           # time (DD-HH:MM)
-#SBATCH --job-name=v1 # the name of the model
+#SBATCH --time=6-23:55           # time (DD-HH:MM)
+#SBATCH --job-name=v0 # the name of the model
 #SBATCH --array=1-3  # to run 3 chains 
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=25G                 # Default memory per CPU is 3GB.
@@ -19,9 +19,9 @@ module load r/4.1.2
 # module list # List loaded modules
 
 # Other commands can be included below
-cd ~/projects/def-pelleti2/pigeonga/Trsw_CMR/
+cd ~/projects/def-pelleti2/pigeonga/Trsw_justine/
 
-Rscript --verbose batchJob/4_runModel.R $SLURM_JOB_NAME $SLURM_ARRAY_TASK_ID
+Rscript --verbose R/4_runModel.R $SLURM_JOB_NAME $SLURM_ARRAY_TASK_ID
 
 
 # R CMD BATCH R/313_RMCMC.R
