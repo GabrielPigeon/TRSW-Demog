@@ -654,291 +654,88 @@ elest_summ %>% filter(var=='lambda') %>%
 
 
 # varPart -----------------------------------------------------------------
-
-# tempo fixed var
-fixTempo <- sapply(1:nrow(yrMeanEnvs),function(t){
-  out1 <- g.Pred.LMat(newd = yrMeanEnvs[t,],betaz = betazz,t = NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-fixpblupTempo <- sapply(1:nrow(yrMeanEnvs),function(t){
-  out1 <- g.Pred.LMat(newd = yrMeanEnvs[t,],betaz = betazz,t = t,pim = NA,f = NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-
-# spacial fixed var
-farmMeanEnvs <- apply(mydat$r.farmYrEnv,c(1,3) , mean) %>% as_tibble() %>%
-  rename(prec.cold=`prec:cold`,
-         prec.IA=`prec:IA`,
-         IA.cold=`IA:cold`)
-
-fixSpatio <- sapply(1:nrow(farmMeanEnvs),function(t){
-  out1 <- g.Pred.LMat(newd = farmMeanEnvs[t,],betaz = betazz,t = NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-# spatioTempo fixed
-lit <- nrow(fixTempo)
-sptTmpLambda <- array(NA,dim = c(40,13,lit))
-for(t in 1:13){
-  for(f in 1:40){
-    inp=mydat$r.farmYrEnv[f,t,] %>% t() %>% as.tibble()%>%
-      rename(prec.cold=`prec:cold`,
-             prec.IA=`prec:IA`,
-             IA.cold=`IA:cold`)
-    out1 <- g.Pred.LMat(newd = inp,betaz = betazz,t = NA,f=NA )$LMatrix
-    sptTmpLambda[f,t,] <- apply(out1,3,function(it){lambda(it)})
-  }
-}
-
-# tempo ran var
-flat <- apply(mydat$r.farmYrEnv,c(3) , mean) %>% t() %>% as_tibble() %>%
-  rename(prec.cold=`prec:cold`,
-         prec.IA=`prec:IA`,
-         IA.cold=`IA:cold`)
-
-ranTempo <- sapply(1:100,function(t){
-  out1 <- g.Pred.LMat(newd =flat ,betaz = betazz,t = 'ran',f=NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-# spatio ran var
-ranSpatio <- sapply(1:100,function(t){
-  out1 <- g.Pred.LMat(newd =flat ,betaz = betazz,f='ran',t = NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-blupTempo <- sapply(1:nrow(yrMeanEnvs),function(t){
-  out1 <- g.Pred.LMat(newd = flat,betaz = betazz,t = t,pim = NA,f = NA )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-blupSpatio <- sapply(1:nrow(farmMeanEnvs),function(f){
-  out1 <- g.Pred.LMat(newd = flat,betaz = betazz,t=NA,f = f )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-blupSpatioTempo <- array(NA,dim = c(40,13,lit))
-for(t in 1:13){
-  for(f in 1:40){
-    out1 <- g.Pred.LMat(newd = flat,betaz = betazz,t = t,f=f )$LMatrix
-    blupSpatioTempo[f,t,] <- apply(out1,3,function(it){lambda(it)})
-  }
-}
-
-# fix_immi
-
-fixImi <- sapply(1:(nrow(yrMeanEnvs)),function(t){
-  out1 <- g.Pred.LMat(newd = flat,betaz = betazz,t=NA,pim = t )$LMatrix
-  apply(out1,3,function(it){lambda(it)})
-})
-
-
-# all the varZ
-
-lit <- nrow(fixTempo)
-allTheVarZnoImi <- varAI <- varHOSP <- allTheVarZ <- array(NA,dim = c(40,13,lit))
-for(t in 1:13){
-  for(f in 1:40){
-    inp=mydat$r.farmYrEnv[f,t,] %>% t() %>% as.tibble()%>%
-      rename(prec.cold=`prec:cold`,
-             prec.IA=`prec:IA`,
-             IA.cold=`IA:cold`)
-    bloup <- lapply(1:1,function(i){
-      out1 <- g.Pred.LMat(newd = inp,betaz = betazz, t = t ,f=f,pim=t)$LMatrix
-      apply(out1,3,function(it){lambda(it)})
-    })
-    allTheVarZ[f,t,] <- unlist(bloup)
-  }
-}
-
-for(t in 1:13){
-  for(f in 1:40){
-    inp=mydat$r.farmYrEnv[f,t,] %>% t() %>% as.tibble()%>%
-      rename(prec.cold=`prec:cold`,
-             prec.IA=`prec:IA`,
-             IA.cold=`IA:cold`)
-    bloup <- lapply(1:1,function(i){
-      out1 <- g.Pred.LMat(newd = inp,betaz = betazz, t = t ,f=f,pim=NA)$LMatrix
-      apply(out1,3,function(it){lambda(it)})
-    })
-    allTheVarZnoImi[f,t,] <- unlist(bloup)
-  }
-}
-
-for(t in 1:13){
-  for(f in 1:40){
-    inp=mydat$r.farmYrEnv[f,t,] %>% t() %>% as.tibble()%>%
-      rename(prec.cold=`prec:cold`,
-             prec.IA=`prec:IA`,
-             IA.cold=`IA:cold`) %>%
-      mutate(IA=0)
-    bloup <- lapply(1:1,function(i){
-      out1 <- g.Pred.LMat(newd = inp,betaz = betazz, t = t ,f=f,pim=NA)$LMatrix
-      apply(out1,3,function(it){lambda(it)})
-    })
-    varHOSP[f,t,] <- unlist(bloup)
-  }
-}
-for(t in 1:13){
-  for(f in 1:40){
-    inp=mydat$r.farmYrEnv[f,t,] %>% t() %>% as.tibble()%>%
-      rename(prec.cold=`prec:cold`,
-             prec.IA=`prec:IA`,
-             IA.cold=`IA:cold`) %>%
-      mutate(hosp=0)
-    bloup <- lapply(1:1,function(i){
-      out1 <- g.Pred.LMat(newd = inp,betaz = betazz, t = t ,f=f,pim=NA)$LMatrix
-      apply(out1,3,function(it){lambda(it)})
-    })
-    varAI[f,t,] <- unlist(bloup)
-  }
-}
-
-VarAll=tibble(tempoFix=apply(fixTempo,1,var),
-              # tempoRan=apply(ranTempo,1,var),
-              # spatioFix=apply(fixSpatio,1,var),
-              # spatioRan=apply(ranSpatio,1,var),
-              tempoImmi=apply(fixImi,1,var),
-              spatioTempoFix= apply(sptTmpLambda,3,function(x) var(as.numeric(x))),
-              blupTempo=apply(blupTempo,1,var),
-              blupSpatio=apply(blupSpatio,1,var),
-              blupSpatioTempo= apply(blupSpatioTempo,3,function(x) var(as.numeric(x))),
-              spatioTempoFixImmi= apply(allTheVarZnoImi,3,function(x) var(as.numeric(x))),
-              varAI= apply(varAI,3,function(x) var(as.numeric(x))),
-              varHOSP= apply(varHOSP,3,function(x) var(as.numeric(x))),
-              # fixpblupTempo=apply(fixpblupTempo,1,var),
-              predVar= apply(allTheVarZ,3,function(x) var(as.numeric(x)))
-              )
-
-#   write_rds(VarAll,'cache/VarAll.rds')
-apply(blupTempo[,-c(7,11)],1,var) %>% median()
-
-hist(VarAll$tempoFix)
-hist(VarAll$tempoRan[VarAll$tempoRan<.1])
-hist(VarAll$spatioFix)
-hist(VarAll$spatioRan)
-hist(VarAll$spatioTempoFix)
-hist(VarAll$tempoImmi)
-VarAll$spatioXtempo <- VarAll$spatioTempoFix-VarAll$tempoFix-VarAll$spatioFix
-vv <- VarAll %>% apply(2,median)
-vv %>% round(4)
-
-(vv[c('tempoFix','spatioFix','blupTempo','blupSpatio','tempoImmi')] %>% sum)/ vv[10]
-
-VarPart <- vv/vv[10]
-
-
-Var.EnvYrBlupImmiLambda <- 0.02552773
-realLambda<- 0.04797239
-VarEnvYrBlupImmiLambda/realLambda
-0.03759849/realLambda
-
-sum(vv[-c(5,7)])/realLambda
-
-
-mycolors <- c('#50938a','#5983b0','#e74c3c',
-              '#7dc1b8','#7eb3eb','#f1814c' )
-dtVP <- tibble(comp=names(VarPart),
-               pc=VarPart,
-               fix=c('fixe','random','fixe','random','fixe','fixe'),
-               spatio=c('tempo','tempo','spatio','spatio','both','tempo'),
-               col=c('#50938a','#7dc1b8','#5983b0','#7eb3eb','#e74c3c','#f1814c' )
-) %>%
-  mutate(comp=factor(comp,levels = c('tempoFix','tempoRan','spatioFix','spatioRan','spatioXtempo','tempoImmi'),
-                     labels = c('tempoFix','tempoRan','spatioFix','spatioRan','spatioXtempo','tempoImmi')
-  ))
-
-dtVP %>% arrange(pc) %>%
-  ggplot(aes(x=1,y=pc,fill=I(col)))+
-  geom_bar(stat='identity',position = 'stack',width = 1,color='black')+
-  scale_y_continuous(expand=expansion(0,0))+
-  scale_x_continuous(expand=expansion(0,0))+
-  coord_polar(theta = 'y',direction = -1)+
-  theme_nothing(16)+
-  theme(panel.background = element_rect(fill='transparent'), #transparent panel bg
-        plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
-        panel.grid.major = element_blank(), #remove major gridlines
-        panel.grid.minor = element_blank(), #remove minor gridlines
-        legend.background = element_rect(fill='transparent'), #transparent legend bg
-        legend.box.background = element_rect(fill='transparent') #transparent legend panel
-  )
-
-ggsave('~/Downloads/pie.png',bg='transparent',w=5.5,h=5.5)
-
-
-
-# re-sampling as suggested by Sandra --------------------------------------
 library(parallel)
 
-varHOSP <- mclapply(1:1000,function(i1){
-  inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
-    rename(prec.cold=`prec:cold`,
-           prec.IA=`prec:IA`,
-           IA.cold=`IA:cold`)
-  ci <- expand_grid(f=1:40,t=1:13)
-  t <- sample(1:13,1)
-  useit <- sample(1:nrow(betazz))
-  out1 <- sapply(sample(1:nrow(ci),size=10),function(i2){
-    inp=inp %>% mutate(hosp=mydat$r.farmYrEnv[ci$f[i2],ci$t[i2],'hosp'])
-    out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=NA,t = NA ,pim = t)$LMatrix
-    apply(out1,3,function(it){lambda(it)})
-  })
-  return(apply(out1,1,var))
+varHOSP <- mclapply(1:100,function(i1){
+    inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
+        rename(prec.cold=`prec:cold`,
+               prec.IA=`prec:IA`,
+               IA.cold=`IA:cold`)
+    ci <- expand_grid(f=1:40,t=1:13)
+    t <- sample(1:13,1)
+    f <- sample(1:40,1)
+    useit <- sample(1:nrow(betazz))
+    out1 <- sapply(sample(1:nrow(ci),size=10),function(i2){
+        inp=inp %>% mutate(hosp=mydat$r.farmYrEnv[ci$f[i2],ci$t[i2],'hosp'])
+        out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=f,t = t ,pim = t)$LMatrix
+        apply(out1,3,function(it){lambda(it)})
+    })
+    return(apply(out1,1,var))
 },mc.cores = 2)
 varHOSP %>% unlist() %>% hist(30)
 
 
-varAI <- mclapply(1:1000,function(i1){
-  inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
-    rename(prec.cold=`prec:cold`,
-           prec.IA=`prec:IA`,
-           IA.cold=`IA:cold`)
-  ci <- expand_grid(f=1:40,t=1:13)
-  t <- sample(1:13,1)
-  useit <- sample(1:nrow(betazz))
-  out1 <- sapply(sample(1:nrow(ci),size=10),function(i2){
-    inp=inp %>% mutate(IA=mydat$r.farmYrEnv[ci$f[i2],ci$t[i2],'IA'])
-    out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=NA,t = NA ,pim = t)$LMatrix
-    apply(out1,3,function(it){lambda(it)})
-  })
-  return(apply(out1,1,var))
-},mc.cores = 2)
-varAI %>% unlist() %>% hist(30)
+# varAI <- mclapply(1:100,function(i1){
+#   inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
+#     rename(prec.cold=`prec:cold`,
+#            prec.IA=`prec:IA`,
+#            IA.cold=`IA:cold`)
+#   ci <- expand_grid(f=1:40,t=1:13)
+#   t <- sample(1:13,1)
+#   useit <- sample(1:nrow(betazz))
+#   out1 <- sapply(sample(1:nrow(ci),size=10),function(i2){
+#     inp=inp %>% mutate(IA=mydat$r.farmYrEnv[ci$f[i2],ci$t[i2],'IA'])
+#     out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=NA,t = NA ,pim = t)$LMatrix
+#     apply(out1,3,function(it){lambda(it)})
+#   })
+#   return(apply(out1,1,var))
+# },mc.cores = 2)
+# varAI %>% unlist() %>% hist(30)
 
-varFarm <- mclapply(1:1000,function(i1){
-  inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
-    rename(prec.cold=`prec:cold`,
-           prec.IA=`prec:IA`,
-           IA.cold=`IA:cold`)
-  t <- sample(1:13,1)
-  useit <- sample(1:nrow(betazz))
-  out1 <- sapply(sample(1:40,size=10),function(i2){
-    out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=i2,t = NA ,pim = t)$LMatrix
-    apply(out1,3,function(it){lambda(it)})
-  })
-  return(apply(out1,1,var))
+varFarm <- mclapply(1:100,function(i1){
+    inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
+        rename(prec.cold=`prec:cold`,
+               prec.IA=`prec:IA`,
+               IA.cold=`IA:cold`)
+    t <- sample(1:13,1)
+    useit <- sample(1:nrow(betazz))
+    out1 <- sapply(sample(1:40,size=10),function(i2){
+        out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=i2,t = t ,pim = t)$LMatrix
+        apply(out1,3,function(it){lambda(it)})
+    })
+    return(apply(out1,1,var))
 },mc.cores = 2)
 varFarm %>% unlist() %>% hist(30)
 
 
-varYr <- mclapply(1:1000,function(i1){
-  inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
-    rename(prec.cold=`prec:cold`,
-           prec.IA=`prec:IA`,
-           IA.cold=`IA:cold`)
-  t <- sample(1:13,1)
-  useit <- sample(1:nrow(betazz))
-  out1 <- sapply(sample(1:40,size=10),function(i2){
-    out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=NA,t = i2 ,pim = t)$LMatrix
-    apply(out1,3,function(it){lambda(it)})
-  })
-  return(apply(out1,1,var))
+varYr <- mclapply(1:100,function(i1){
+    inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
+        rename(prec.cold=`prec:cold`,
+               prec.IA=`prec:IA`,
+               IA.cold=`IA:cold`)
+    t <- sample(1:13,1)
+    f <- sample(1:40,1)
+    useit <- sample(1:nrow(betazz))
+    out1 <- sapply(sample(1:40,size=10),function(i2){
+        out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=f,t = i2 ,pim = t)$LMatrix
+        apply(out1,3,function(it){lambda(it)})
+    })
+    return(apply(out1,1,var))
 },mc.cores = 2)
+
 varYr %>% unlist() %>% hist(30)
 
 
-tibble(it=1:length(unlist(varAI)),varAI=unlist(varAI),varHOSP=unlist(varHOSP),varFarm=unlist(varFarm),varYr=unlist(varYr)) %>%
-  pivot_longer(-it) %>%
-  group_by(it) %>% mutate(value=value/sum(value)) %>%
-  ggplot(aes(x=value,fill=name))+geom_density(alpha=0.3)
+varTib <- tibble(it=1:length(unlist(varHOSP)),
+                 # varAI=unlist(varAI),
+                 varHOSP=unlist(varHOSP),varFarm=unlist(varFarm),varYr=unlist(varYr))
+hist(varTib$varHOSP)
+hist(varTib$varFarm)
+
+varTib %>% filter(varYr<0.1) %>%pivot_longer(-it) %>%
+    group_by(it) %>% mutate(value=value/sum(value)) %>%
+    ggplot(aes(x=value,fill=name))+geom_density(alpha=0.3)
+varTib %>% filter(varYr<0.1) %>%pivot_longer(-it) %>%
+    group_by(it) %>% mutate(value=value/sum(value)) %>%
+    group_by(name) %>%
+    summarise(printMeanCI(value))
