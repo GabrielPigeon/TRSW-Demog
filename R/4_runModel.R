@@ -144,8 +144,8 @@ paraNimble <- function(seed,curCode,curConst, curDat,
 if(length(args)>1) {
     chain_output=paraNimble(seed = as.numeric(args[2]),
                             curCode=myCode,curInits = myInits,vars=MyVars,
-                            curConst=miniConst,curDat=miniDat,
-                            # curConst=myconst,curDat=mydat,
+                            # curConst=miniConst,curDat=miniDat,
+                            curConst=myconst,curDat=mydat,
                             modName=curModelName,checkpt=5
     )
 }else{
@@ -154,8 +154,8 @@ if(length(args)>1) {
     chain_output <- parLapply(cl = this_cluster, X = 1:2,
                               fun = paraNimble,
                               curCode=myCode,curInits = myInits ,vars=MyVars,
-                              curConst=miniConst,curDat=miniDat,
-                              # curConst=myconst,curDat=mydat,
+                              # curConst=miniConst,curDat=miniDat,
+                              curConst=myconst,curDat=mydat,
                               modName=curModelName,checkpt=0
     )
     # It's good practice to close the cluster when you're done with it.

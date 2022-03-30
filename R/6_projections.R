@@ -9,11 +9,20 @@ source('R/999_MyFunc.R')
 # source('R/110_cleanMultiState.R')
 load('cache/cleanMultiState.Rdata')
 
+load('../14_Trsw_CMR/cache/313_m6f_0916.Rdata')
+betazzP <- chain_output %>% #map(~.x[[1]]) %>%
+  map(~as.data.frame(.x)) %>% bind_rows() %>%
+  select(contains('Pim'))
 
-load('cache/out_v0b.Rdata')
+load('cache/out_v0.Rdata')
 betazz <- chain_output %>% map(~.x[[1]]) %>%
   map(~as.data.frame(.x[[1]])) %>% bind_rows() %>%
   select(!contains('hat') & !contains('nff') )
+
+ltmp=max(nrow(betazz),nrow(betazzP))
+betazz <- cbind(betazz[1:ltmp,],betazzP[1:ltmp,])
+
+
 
 mclist <- chain_output %>% map(~as.mcmc(.x[[1]][[1]]) )%>% as.mcmc.list()
 # mclist <- chain_output %>% map(~as.mcmc(.x) )%>% as.mcmc.list()
@@ -328,8 +337,9 @@ g.Pred.LMat <- function(newd,betaz=betazz,t=NA,f=NA,pim=NA){
 newd <- yrMeanEnvs[1,] %>% mutate_all(~0) %>% slice_sample(n=11,replace = T) %>%
   mutate(hosp=unique(as.numeric(mydat$x.farmYrEnv[,,'hosp']))) %>% arrange(hosp)
 
+
 allYrMat <- lapply(1:nrow(newd),function(t){
-  g.Pred.LMat(newd = newd[t,],betaz = betazz,t=NA,f=NA,pim=0)
+  g.Pred.LMat(newd = newd[t,],betaz = betazz,t=NA,f=NA,pim=NA)
 })
 
 meanMatz <- allYrMat %>% map(~ apply(.x[[1]],c(1,2),mean))
@@ -361,7 +371,7 @@ ggplot(data=meanlambds_hosp,aes(x = as.factor(hosp),y=lambda,ymin=lbd.cil,ymax=l
        x="Taux d'occupation par le moineau")+
   theme_gab() +  ylim(0.43,.95)
 
-#
+
 hospD <- tibble(hosp=0:10,
                 n=as.numeric(table(yrFarmEnv[,,'hosp'])))
 g.hosp <- ggplot(data=meanlambds_hosp,aes(x = as.factor(hosp),y=lambda))+
