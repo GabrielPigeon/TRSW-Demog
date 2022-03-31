@@ -219,11 +219,17 @@ myCode <- nimbleCode({
     
     
     # Farm location and movement
-    sig~dunif(0,50) 
-    farm.probs[1:nb.farm,1:nb.farm] <-exp(- D[1:nb.farm,1:nb.farm] / sig)  # exponential decline in mvt prob with distance. 
+    # sig[1]~dunif(0,50) 
+    # sig[2]~dunif(0,50) 
+    # sig[3] <- 0.1
+    # for(s in 1:3){
+    #     farm.probs[1:nb.farm,1:nb.farm,s] <-exp(- D[1:nb.farm,1:nb.farm] / sig[s])  # exponential decline in mvt prob with distance. 
+    # }
     
+    farm.probs[1:nb.farm,1:nb.farm] <-exp(- D[1:nb.farm,1:nb.farm] / sig)  # exponential decline in mvt prob with distance. 
     for(i in 1:nb.id){
         for(t in (first[i]+1):nb.t){
+            # farm[i,t]~dcat(farm.probs[farm[i,t-1],1:nb.farm,state[i,t-1]]) # for state dependant dispersion
             farm[i,t]~dcat(farm.probs[farm[i,t-1],1:nb.farm])
         }
     }
@@ -405,23 +411,23 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 
 
 ## testing ---------------------
-
-library(coda)
-library(tidyverse)
-source('R/999_MyFunc.R')
-load('cache/cleanMultiState.Rdata')
-
-nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
-           niter = 2000,nburnin = 1000,nchains = 3,
-           monitors = MyVars,
-           summary = T,samplesAsCodaMCMC = T,
-           inits = myInits(curDat = microDat,curConst = microConst)
-        )
-
-plot(nimbleOut$samples[,"s.B.int[2]"])
-plot(nimbleOut$samples[,"Omega.yr[3, 3]"])
-plot(nimbleOut$samples[,"Omega.yr[3, 2]"])
-
-plot(nimbleOut$samples[,"sig"])
-plot(nimbleOut$samples[,"mu.p[1]"])
-plot(nimbleOut$samples[,"mu.p[2]"])
+# 
+# library(coda)
+# library(tidyverse)
+# source('R/999_MyFunc.R')
+# load('cache/cleanMultiState.Rdata')
+# 
+# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
+#            niter = 2000,nburnin = 1000,nchains = 3,
+#            monitors = MyVars,
+#            summary = T,samplesAsCodaMCMC = T,
+#            inits = myInits(curDat = microDat,curConst = microConst)
+#         )
+# 
+# plot(nimbleOut$samples[,"s.B.int[2]"])
+# plot(nimbleOut$samples[,"Omega.yr[3, 3]"])
+# plot(nimbleOut$samples[,"Omega.yr[3, 2]"])
+# 
+# plot(nimbleOut$samples[,"sig"])
+# plot(nimbleOut$samples[,"mu.p[1]"])
+# plot(nimbleOut$samples[,"mu.p[2]"])
