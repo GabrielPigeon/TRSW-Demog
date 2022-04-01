@@ -18,7 +18,7 @@ longDat <- map_dfr(1:13, function(t){
         ismat=((1:nrow(mydat$obs)) %in% myconst$iMat),
         isIn= (t>=myconst$first),
         farm=as.numeric(mydat$farm[,t]),
-        farm_tp1=as.numeric(mydat$farm[,t])
+        farm_tp1=as.numeric(mydat$farm[,t+1])
     )
     env_t <- mydat$x.farmYrEnv[as.numeric(mydat$farm[,t]),t,]
     env_tp1 <- mydat$x.farmYrEnv[as.numeric(mydat$farm[,t+1]),t+1,]
@@ -53,3 +53,12 @@ longDat %>% filter(!is.na(rs),age>1) %>%
 longDat %>% filter(!is.na(rs),age>1) %>% 
     glmer(rs_tp1~as.factor(age)*as.factor(rs)+(1|t),family='binomial',data=.) %>% 
     summary
+
+tmp <- filter(longDat,!is.na(rs_tp1))
+modrs <- glmer(rs_tp1~as.factor(age)*(
+    precip.rearing_tp1 + coldSnap.rearing_tp1+IA_tp1+`prec:cold_tp1`+`prec:IA_tp1`+`IA:cold_tp1`+triple_tp1 
+    )+(1|t)+(1|farm_tp1),family='binomial',data=tmp,na.action = 'na.fail')
+modrs%>%summary
+
+dredge <- MuMIn::dredge(modrs)
+
