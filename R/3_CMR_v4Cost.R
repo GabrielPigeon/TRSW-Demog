@@ -371,25 +371,25 @@ myCode <- nimbleCode({
     # Calculate derived population parameters  -------------------
     
     # get nb of id of each age class in the pop	
-    #  for(t in 1:nb.t){
-    #    for(i in 1:nb.id) {
-    #        st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
-    #    }
-    #    Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
-    #    Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
-    #    Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
-    #  }
-    # # #
-    # # 
-    # # # immigration
-    # # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
-    #  for(t in 2:nb.t){
-    #    imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
-    #    imib[t] <- imi[t,2]-imia[t]
-    #    Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
-    #    Pim[2,t] <- (imia[t])/Nm[2,t-1]
-    #    Pim[3,t] <- (imib[t])/Nm[3,t-1]
-    #  }
+     for(t in 1:nb.t){
+       for(i in 1:nb.id) {
+           st1[i,t] <- (state[i,t]>0) * (state[i,t]<3)* age[i,t]
+       }
+       Nm[1,t] <- sum(st1[1:nb.id,t]==1) # nb marked ois
+       Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
+       Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
+     }
+    # #
+    #
+    # # immigration
+    # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
+     for(t in 2:nb.t){
+       imia[t] <-  round(imi[t,2] *0.48)  # *48 = prop of ASY which come from SY according to Esther
+       imib[t] <- imi[t,2]-imia[t]
+       Pim[1,t] <- (imi[t,1])/Nm[1,t-1]
+       Pim[2,t] <- (imia[t])/Nm[2,t-1]
+       Pim[3,t] <- (imib[t])/Nm[3,t-1]
+     }
 }
 )
 
@@ -438,7 +438,7 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
          's.ranef.yr','r.ranef.yr','f.ranef.yr',
          's.ranef.farm','r.ranef.farm','f.ranef.farm',
          'sig','s.cost','r.cost',
-         # 'Pim','Nm',
+         'Pim','Nm',
          'xi',
          'mu.p','p1','p2','sd.p')
 
@@ -447,24 +447,24 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 
 ## testing ---------------------
 
-library(coda)
-library(tidyverse)
-source('R/999_MyFunc.R')
-load('cache/cleanMultiState.Rdata')
-
-nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
-           niter = 2000,nburnin = 1000,nchains = 3,
-           monitors = MyVars,
-           summary = T,samplesAsCodaMCMC = T,
-           inits = myInits(curDat = microDat,curConst = microConst)
-        )
-
-
-plot(nimbleOut$samples[,grepl(".B.int",colnames(nimbleOut$samples[[1]]))])
-plot(nimbleOut$samples[,"Omega.yr[3, 3]"])
-plot(nimbleOut$samples[,"Omega.yr[3, 2]"])
-plot(nimbleOut$samples[,"sig"])
-plot(nimbleOut$samples[,"mu.p[1]"])
-plot(nimbleOut$samples[,"mu.p[2]"])
-
-nimbleOut$summary$all.chainsp['xi[3, 5]']
+# library(coda)
+# library(tidyverse)
+# source('R/999_MyFunc.R')
+# load('cache/cleanMultiState.Rdata')
+# 
+# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
+#            niter = 2000,nburnin = 1000,nchains = 3,
+#            monitors = MyVars,
+#            summary = T,samplesAsCodaMCMC = T,
+#            inits = myInits(curDat = microDat,curConst = microConst)
+#         )
+# 
+# 
+# plot(nimbleOut$samples[,grepl(".B.int",colnames(nimbleOut$samples[[1]]))])
+# plot(nimbleOut$samples[,"Omega.yr[3, 3]"])
+# plot(nimbleOut$samples[,"Omega.yr[3, 2]"])
+# plot(nimbleOut$samples[,"sig"])
+# plot(nimbleOut$samples[,"mu.p[1]"])
+# plot(nimbleOut$samples[,"mu.p[2]"])
+# 
+# nimbleOut$summary$all.chainsp['xi[3, 5]']

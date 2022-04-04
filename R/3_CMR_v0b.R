@@ -261,7 +261,6 @@ myCode <- nimbleCode({
        Nm[2,t] <- sum(st1[1:nb.id,t]==2) # nb marked SY
        Nm[3,t] <- sum(st1[1:nb.id,t]==3) # nb marked SY
      }
-    # #
     #
     # # immigration
     # # similar to Taylor et al. 2018  & (Schaub and Fletcher 2015).
@@ -341,19 +340,19 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 
 ## testing ---------------------
 
-library(coda)
-library(tidyverse)
-source('R/999_MyFunc.R')
-load('cache/cleanMultiState.Rdata')
-
-nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
-           niter = 2000,nburnin = 1000,nchains = 3,
-           monitors = MyVars,
-           summary = T,samplesAsCodaMCMC = T,
-           inits = myInits(curDat = microDat,curConst = microConst)
-        )
-
-plot(nimbleOut$samples[,"s.B.int[2]"])
-plot(nimbleOut$samples[,'Sigma.yr[3]'])
-plot(nimbleOut$samples[,'Sigma.yr[6]'])
-plot(nimbleOut$samples[,"sig"])
+# library(coda)
+# library(tidyverse)
+# source('R/999_MyFunc.R')
+# load('cache/cleanMultiState.Rdata')
+# 
+# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
+#            niter = 2000,nburnin = 1000,nchains = 3,
+#            monitors = MyVars,
+#            summary = T,samplesAsCodaMCMC = T,
+#            inits = myInits(curDat = microDat,curConst = microConst)
+#         )
+# 
+# plot(nimbleOut$samples[,"s.B.int[2]"])
+# plot(nimbleOut$samples[,'Sigma.yr[3]'])
+# plot(nimbleOut$samples[,'Sigma.yr[6]'])
+# plot(nimbleOut$samples[,"sig"])

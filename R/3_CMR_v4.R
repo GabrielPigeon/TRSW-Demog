@@ -404,7 +404,7 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
          's.ranef.yr','r.ranef.yr','f.ranef.yr',
          's.ranef.farm','r.ranef.farm','f.ranef.farm',
          'sig',
-         # 'Pim','Nm',
+         'Pim','Nm',
          'mu.p','p1','p2','sd.p')
 
 
