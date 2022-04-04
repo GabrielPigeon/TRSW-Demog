@@ -54,7 +54,7 @@ longDat %>% filter(!is.na(rs),age>1) %>%
     glmer(rs_tp1~as.factor(age)*as.factor(rs)+(1|t),family='binomial',data=.) %>% 
     summary
 
-tmp <- filter(longDat,!is.na(rs_tp1))
+tmp <- filter(longDat,!is.na(rs_tp1) &!is.na(farm_tp1))
 modrs <- glmer(rs_tp1~as.factor(age)*(
     precip.rearing_tp1 + coldSnap.rearing_tp1+IA_tp1+`prec:cold_tp1`+`prec:IA_tp1`+`IA:cold_tp1`+triple_tp1 
     )+(1|t)+(1|farm_tp1),family='binomial',data=tmp,na.action = 'na.fail')
