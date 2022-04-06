@@ -4,7 +4,7 @@
 # choleski decomposition for mvnorm rnadom effect
 # both yr and farm random effect are age depedent
 # no E effect
-
+ 
 # states:
 # 1=alive & 0 nestling fledged
 # 2=alive & >0 nestling fledged
