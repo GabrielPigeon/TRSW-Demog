@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --account=def-pelleti2
 #SBATCH --time=6-23:55           # time (DD-HH:MM)
-#SBATCH --job-name=v0 # the name of the model
+#SBATCH --job-name=v4 # the name of the model
 #SBATCH --array=1-3  # to run 3 chains 
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=25G                 # Default memory per CPU is 3GB.
+#SBATCH --mem-per-cpu=31G                 # Default memory per CPU is 3GB.
 #SBATCH --mail-user=gabriel.pigeon@usherbrooke.ca
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
