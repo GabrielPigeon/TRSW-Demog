@@ -2,8 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-data
-cache
+/data/
+/cache/
 graphs
 *Rproj
 *.docx
+!/data/Raw_data_goes_here.txt
+!/cache/CleanDat_goes_here.Rdata
