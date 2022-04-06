@@ -200,7 +200,7 @@ myCode <- nimbleCode({
     
     Omega.id[1:2,1:2] <- A[1:2,1:2]%*%l[1:2,1:2]%*%Delta[1:2,1:2]%*%t(l[1:2,1:2])%*%A[1:2,1:2]
     for(i in 1:nb.id){
-        for(j in 1:9){
+        for(j in 1:2){
             xi.id[i, j] ~ dnorm(0.0, tau.id[j])
         }
         r.ranef.id[i] <- A.id[1, 1]*(l.id[1, 1]*xi.id[i, 1]);
@@ -226,6 +226,7 @@ myCode <- nimbleCode({
     #     farm.probs[1:nb.farm,1:nb.farm,s] <-exp(- D[1:nb.farm,1:nb.farm] / sig[s])  # exponential decline in mvt prob with distance. 
     # }
     
+    sig~dunif(0,50)
     farm.probs[1:nb.farm,1:nb.farm] <-exp(- D[1:nb.farm,1:nb.farm] / sig)  # exponential decline in mvt prob with distance. 
     for(i in 1:nb.id){
         for(t in (first[i]+1):nb.t){
@@ -373,6 +374,9 @@ myInits <- function(curDat,curConst){
         f.B.Env=matrix(rnorm(9*3,0, 0.25),ncol = 3),
         mu.p= rnorm(2,c(0,3), 0.12),
         ranef.pa=rnorm(14-1,0,0.1),
+        xi=matrix(0.01,nrow = curConst$nb.t,ncol = 9),
+        xi.farm=matrix(0.01,nrow = 40,ncol = 9),
+        xi.id=matrix(0.01,nrow = curConst$nb.id,ncol = 2),
         tau.p=runif(1,4,8),
         sig=rnorm(1,3,.5),
         farm=apply(curDat$farm,1:2,function(ff) ifelse(is.na(ff),sample(1:40,1),NA)),
