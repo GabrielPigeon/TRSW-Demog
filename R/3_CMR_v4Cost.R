@@ -402,6 +402,7 @@ myInits <- function(curDat,curConst){
         s.B.Env=matrix(rnorm(9*3,0, 0.25),ncol = 3),
         r.B.Env=matrix(rnorm(9*3,0, 0.25),ncol = 3),
         f.B.Env=matrix(rnorm(9*3,0, 0.25),ncol = 3),
+        r.cost=rnorm(1,0,0.5),s.cost=rnorm(1,0,0.5),
         mu.p= rnorm(2,c(0,3), 0.12),
         ranef.pa=rnorm(14-1,0,0.1),
         xi=matrix(0.01,nrow = curConst$nb.t,ncol = 9),

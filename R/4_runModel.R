@@ -18,6 +18,8 @@ source('R/999_MyFunc.R')
 load('cache/cleanMultiState.Rdata')
 source(paste0('R/3_CMR_',curModelName,'.R'))
 
+print('running model:')
+print(curModelName)
 
 # checks   ------------------
 #mydat$nbFledge[mydat$state==2] %>% table(useNA = 'a')
