@@ -318,7 +318,7 @@ myInits <- function(curDat,curConst){
 }
 
 MyVars=c('s.B.int','r.B.int','f.B.int',
-         'Sigma.id','rho.id', 'xi.id', 'eps.id',
+         'Sigma.id','rho.id', 'xi.id', #'eps.id',
          'Sigma.yr','rho.yr',  'xi.yr','eps.yr' ,
          'Sigma.farm', 'rho.farm','xi.farm', 'eps.farm'  ,
          # "cor.id","sd.id", 'cor.yr','sd.yr',

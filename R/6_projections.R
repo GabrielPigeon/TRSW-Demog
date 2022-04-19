@@ -9,18 +9,18 @@ source('R/999_MyFunc.R')
 # source('R/110_cleanMultiState.R')
 load('cache/cleanMultiState.Rdata')
 
-load('../14_Trsw_CMR/cache/313_m6f_0916.Rdata')
-betazzP <- chain_output %>% #map(~.x[[1]]) %>%
-  map(~as.data.frame(.x)) %>% bind_rows() %>%
-  select(contains('Pim'))
+# load('cache/out_v0b.Rdata')
+# betazzP <- chain_output %>% #map(~.x[[1]]) %>%
+#   map(~as.data.frame(.x)) %>% bind_rows() %>%
+#   select(contains('Pim'))
 
-load('cache/out_v0.Rdata')
+load('cache/out_v0b.Rdata')
 betazz <- chain_output %>% map(~.x[[1]]) %>%
   map(~as.data.frame(.x[[1]])) %>% bind_rows() %>%
   select(!contains('hat') & !contains('nff') )
 
-ltmp=max(nrow(betazz),nrow(betazzP))
-betazz <- cbind(betazz[1:ltmp,],betazzP[1:ltmp,])
+# ltmp=max(nrow(betazz),nrow(betazzP))
+# betazz <- cbind(betazz[1:ltmp,],betazzP[1:ltmp,])
 
 
 
