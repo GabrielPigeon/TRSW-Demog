@@ -440,7 +440,7 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
          's.ranef.farm','r.ranef.farm','f.ranef.farm',
          'sig','s.cost','r.cost',
          'Pim','Nm',
-         'xi',
+         # 'xi', 'A','Delta'   , 'A.farm','Delta.farm','xi.farm','A.id','Delta.id','xi.id',
          'mu.p','p1','p2','sd.p')
 
 
@@ -448,17 +448,23 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 
 ## testing ---------------------
 
-# library(coda)
-# library(tidyverse)
-# source('R/999_MyFunc.R')
-# load('cache/cleanMultiState.Rdata')
-# 
-# nimbleOut <- nimbleMCMC(myCode,constants = microConst,data = microDat,
-#            niter = 2000,nburnin = 1000,nchains = 3,
-#            monitors = MyVars,
-#            summary = T,samplesAsCodaMCMC = T,
-#            inits = myInits(curDat = microDat,curConst = microConst)
-#         )
+library(coda)
+library(tidyverse)
+source('R/999_MyFunc.R')
+load('cache/cleanMultiState.Rdata')
+#
+start <- now()
+nimbleOut <- nimbleMCMC(myCode,constants = miniConst,data = miniDat,
+           # niter = 2000,nburnin = 1000,nchains = 3,
+            # niter = (50000+1000*5),nburnin = 50000,nchains = 3,
+           niter = (50000+1000*1),nburnin = 2000,nchains = 2,
+           monitors = MyVars,
+           summary = T,samplesAsCodaMCMC = T,
+           inits = myInits(curDat = miniDat,curConst = miniConst)
+        )
+dur=now()
+save(nimbleOut,dur,file = 'cache/v4CostMini1c.Rdata')
+
 # 
 # 
 # plot(nimbleOut$samples[,grepl(".B.int",colnames(nimbleOut$samples[[1]]))])
@@ -468,4 +474,5 @@ MyVars=c('s.B.int','r.B.int','f.B.int',
 # plot(nimbleOut$samples[,"mu.p[1]"])
 # plot(nimbleOut$samples[,"mu.p[2]"])
 # 
-# nimbleOut$summary$all.chainsp['xi[3, 5]']
+nimbleOut$summary[,3] %>% hist
+
