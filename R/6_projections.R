@@ -16,7 +16,7 @@ load('cache/cleanMultiState.Rdata')
 
 load('cache/out_v0b.Rdata')
 betazz <- chain_output %>% map(~.x[[1]]) %>%
-  map(~as.data.frame(.x[[1]])) %>% bind_rows() %>%
+  map(~as.data.frame(.x)) %>% bind_rows() %>%
   select(!contains('hat') & !contains('nff') )
 
 # ltmp=max(nrow(betazz),nrow(betazzP))
@@ -657,7 +657,7 @@ elest_summ %>% filter(var=='lambda') %>%
 library(parallel)
 
 varHOSP <- mclapply(1:100,function(i1){
-    inp <- mydat$r.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
+    inp <- mydat$x.farmYrEnv[sample(1:40,1),sample(1:13,1),] %>% t() %>% as.tibble() %>%
         rename(prec.cold=`prec:cold`,
                prec.IA=`prec:IA`,
                IA.cold=`IA:cold`)
@@ -666,12 +666,12 @@ varHOSP <- mclapply(1:100,function(i1){
     f <- sample(1:40,1)
     useit <- sample(1:nrow(betazz))
     out1 <- sapply(sample(1:nrow(ci),size=10),function(i2){
-        inp=inp %>% mutate(hosp=mydat$r.farmYrEnv[ci$f[i2],ci$t[i2],'hosp'])
+        inp=inp %>% mutate(hosp=mydat$x.farmYrEnv[ci$f[i2],ci$t[i2],'hosp'])
         out1 <- g.Pred.LMat(newd =inp ,betaz = betazz[useit,],f=f,t = t ,pim = t)$LMatrix
         apply(out1,3,function(it){lambda(it)})
     })
     return(apply(out1,1,var))
-},mc.cores = 2)
+},mc.cores = 1)
 varHOSP %>% unlist() %>% hist(30)
 
 
